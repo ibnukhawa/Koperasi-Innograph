@@ -21,9 +21,9 @@ class kredit(models.Model):
     _name = 'ksp.kredit'
     
     name = fields.Char('Name', default='Draft')
-    kredit_type = fields.Many2one('ksp.kredit.type','Jenis Kredit')
     tanggal = fields.Date('Tanggal')
     tgl_cair = fields.Date('Tanggal Cair')
+    journal_cair = fields.Many2one('account.journal','Journal Pencairan')
     account_cair = fields.Many2one('account.account','Metode Pencairan')
     partner_id = fields.Many2one('res.partner','Nasabah')
     pokok = fields.Integer('Pokok',default=0)
@@ -261,7 +261,7 @@ class kredit(models.Model):
                     }
                 )
         self.env.cr.execute('DELETE FROM ksp_kredit_biaya_line WHERE kredit_id = %s' % krd_id)
-        for x in self.kredit_type.kredit_line:
+        for x in self.kredit_line:
             nominal = ((x.rate/100)*self.pokok) + x.nominal
             self.name = str(self.pokok)+x.account_id.name
             self.biaya_line.create(
@@ -323,7 +323,7 @@ class kredit(models.Model):
                     'date':self.tgl_cair,
                     'kredit_id':self.id ,
                     'partner_id':self.partner_id.id,
-                    'journal_id':self.kredit_type.journal_cair.id,
+                    'journal_id':self.journal_cair.id,
                     'ref':self.name,
                 }
             )
@@ -331,7 +331,7 @@ class kredit(models.Model):
                 {
                     'partner_id':self.partner_id.id,
                     'date':self.tgl_cair,
-                    'journal_id':self.kredit_type.journal_cair.id,
+                    'journal_id':self.journal_cair.id,
                     'move_id': move.id,
                     'account_id': self.account_cair.id,
                     'credit': pokok-total_biaya,
@@ -344,7 +344,7 @@ class kredit(models.Model):
                     {
                         'partner_id': self.partner_id.id,
                         'date': self.tgl_cair,
-                        'journal_id': self.kredit_type.journal_cair.id,
+                        'journal_id': self.journal_cair.id,
                         'move_id': move.id,
                         'account_id': biaya.account_id.id,
                         'credit': biaya.nominal,
@@ -357,9 +357,9 @@ class kredit(models.Model):
                 {
                     'partner_id': self.partner_id.id,
                     'date': self.tgl_cair,
-                    'journal_id': self.kredit_type.journal_cair.id,
+                    'journal_id': self.journal_cair.id,
                     'move_id': move.id,
-                    'account_id': self.kredit_type.account_pokok.id,
+                    'account_id': self.account_pokok.id,
                     'credit': 0.0,
                     'debit': pokok,
                     'name': self.name,
@@ -416,7 +416,7 @@ class kredit_line(models.Model):
             jtempo = fields.Date.from_string(self.tgl_jt)
             if jtempo < today :
                 selisih = today - jtempo
-                self.denda = self.kredit_id.kredit_type.denda * selisih.days
+                self.denda = self.kredit_id.denda * selisih.days
             else:
                 self.denda = 0
         else:
@@ -514,28 +514,6 @@ class kredit_biaya_line(models.Model):
     name = fields.Char()
     kredit_id = fields.Many2one('ksp.kredit')
     account_id = fields.Many2one('account.account')
-    nominal = fields.Integer('Nominal',default=0)
-
-class kredit_type(models.Model):
-    _name = 'ksp.kredit.type'
-
-    name = fields.Char()
-    account_pokok = fields.Many2one('account.account','Akun Pokok')
-    account_bunga = fields.Many2one('account.account','Akun Bunga')
-    account_denda = fields.Many2one('account.account','Akun Denda')
-    denda = fields.Integer('Nominal denda per hari')
-    kredit_line = fields.One2many('ksp.kredit.type.line','kredit_id')
-    seq_id = fields.Many2one('ir.sequence','Sequence Id')
-    journal_cair = fields.Many2one('account.journal','Journal Pencairan')
-    journal_angsur = fields.Many2one('account.journal','Journal Bayar Angsuran')
-
-class kredit_type_line(models.Model):
-    _name = 'ksp.kredit.type.line'
-
-    name = fields.Char()
-    kredit_id = fields.Many2one('ksp.kredit')
-    account_id = fields.Many2one('account.account')
-    rate = fields.Float('persentase -> pokok pinjaman', default=0.0)
     nominal = fields.Integer('Nominal',default=0)
 
 class account_move(models.Model):

@@ -60,8 +60,8 @@
               <sheet>
                     <group>
                         <group attrs="{'readonly':[('status','!=','draft')]}">
-                            <field name="name" string="No. PK" attrs="{'readonly':[('status','!=','draft')]}"/>
-                            <field name="kredit_type" attrs="{'readonly':[('status','!=','draft')]}"/>
+                            <field name="name" string="No. Pinjaman" attrs="{'readonly':[('status','!=','draft')]}"/>
+                            <!-- <field name="kredit_type" attrs="{'readonly':[('status','!=','draft')]}"/> -->
                             <field name="tanggal" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="tgl_cair" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="partner_id" string="Nasabah" attrs="{'readonly':[('status','!=','draft')]}"/>
@@ -88,14 +88,6 @@
                         </group>
                     </group>
                 <notebook>
-                    <page string="Jaminan">
-                        <field name="jaminan_line">
-                            <tree string="Jaminan yang dipergunakan">
-                                <field name="jaminan_id"/>
-                                <field name="nilai"/>
-                            </tree>
-                        </field>
-                    </page>
                     <page string="Jadwal Angsuran">
                     <field name="kredit_line">
                         <tree String="Jadwal Angsuran" attrs="{'readonly':[('status','!=','draft')]}">
@@ -110,6 +102,14 @@
                             <field name="lunas"/>
                         </tree>
                     </field>
+                    </page>
+                    <page string="Jaminan">
+                        <field name="jaminan_line">
+                            <tree string="Jaminan yang dipergunakan">
+                                <field name="jaminan_id"/>
+                                <field name="nilai"/>
+                            </tree>
+                        </field>
                     </page>
                     <page string="Validasi">
                         <group>
@@ -247,76 +247,6 @@
               action = "ksp_kredit_action_window"
     />
 
-    <record id="ksp_kredit_type_form_view" model="ir.ui.view">
-        <field name="name">ksp.kredit.type.form.view</field>
-        <field name="model">ksp.kredit.type</field>
-        <field name="arch" type="xml">
-            <form string="Jenis Kredit">
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="seq_id"/>
-                        <field name="journal_cair"/>
-                        <field name="journal_angsur"/>
-                        <field name="account_pokok"/>
-                        <field name="account_bunga"/>
-                        <field name="account_denda"/>
-                        <field name="denda"/>
-                    </group>
-                    <notebook>
-                        <page string="Biaya">
-                            <field name="kredit_line">
-                                <tree>
-                                    <field name="name"/>
-                                    <field name="account_id"/>
-                                    <field name="rate" label="Rate"/>
-                                    <field name="nominal"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="ksp_kredit_type_tree_view" model="ir.ui.view">
-        <field name="name">ksp.kredit.type.tree.view</field>
-        <field name="model">ksp.kredit.type</field>
-        <field name="arch" type="xml">
-            <tree string="Jenis Kredit">
-                <field name="name"/>
-            </tree>
-        </field>
-    </record>
-
-    <record id="ksp_kredit_type_action_window" model="ir.actions.act_window">
-        <field name="name">Jenis Kredit</field>
-        <field name="res_model">ksp.kredit.type</field>
-        <field name="view_type">form</field>
-        <field name="view_mode">tree,form</field>
-    </record>
-
-    <record id="ksp_kredit_type_line_form_view" model="ir.ui.view">
-        <field name="name">ksp.kredit.type.line.form.view</field>
-        <field name="model">ksp.kredit.type.line</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="account_id"/>
-                        <field name="rate"/>
-                        <field name="nominal"/>
-                        <p>
-                            Rumus biaya = (rate/100 * pokok pinjaman) + nominal
-                        </p>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
     <menuitem name="Configuration"
               id = "ksp_config_menu"
               sequence="90"
@@ -326,10 +256,6 @@
               id = "ksp_config_kredit_menu"
               parent = "ksp_config_menu"/>
 
-    <menuitem name="Jenis"
-              id = "ksp_kredit_type_menu"
-              parent = "ksp_config_kredit_menu"
-              action="ksp_kredit_type_action_window"/>
 
     <record id="ksp_kredit_bayar_form_view" model="ir.ui.view">
         <field name="name">ksp.kredit.bayar.form.view</field>
