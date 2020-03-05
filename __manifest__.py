@@ -31,6 +31,7 @@ feature :
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        'views/simpanan_views.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

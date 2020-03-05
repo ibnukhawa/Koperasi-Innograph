@@ -644,3 +644,4 @@ class ksp_jaminan_model(models.Model):
         self.image_medium = data["image_medium"]
         self.image_small = data["image_small"]
         return True
+
