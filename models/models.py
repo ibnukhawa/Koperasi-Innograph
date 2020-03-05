@@ -22,8 +22,8 @@ class kredit(models.Model):
     
     name = fields.Char('Name', default='Draft')
     kredit_type = fields.Many2one('ksp.kredit.type','Jenis Kredit')
-    tanggal = fields.Date('Tanggal')
-    tgl_cair = fields.Date('Tanggal Cair')
+    tanggal = fields.Date('Tanggal' , default=fields.Date.today())
+    tgl_cair = fields.Date('Tanggal Cair', default=fields.Date.today())
     account_cair = fields.Many2one('account.account','Metode Pencairan')
     partner_id = fields.Many2one('res.partner','Nasabah')
     pokok = fields.Integer('Pokok',default=0)
@@ -31,7 +31,7 @@ class kredit(models.Model):
     tempo = fields.Integer('Jangka waktu', default=1)
     tempo_type = fields.Selection([('T','Tahun'),('B','Bulan')], default='B')
     angsuran = fields.Integer('Angsuran',compute='_hitung_angsuran')
-    rate = fields.Float('Suku Bunga per bulan', default=0.0)
+    rate = fields.Float('Suku Bunga per bulan', default=1.5)
     rate_tempo = fields.Selection([('B','Bulan'),('T','Tahun')])
     rate_type = fields.Selection([
         ('F','Flat'),
@@ -289,11 +289,9 @@ class kredit(models.Model):
 
     def confirm_kredit(self):
         self.status = 'confirm'
-        self.name = self.env['ir.sequence'].next_by_code('ksp.kredit')
-        for x in self.kredit_line:
-            x.name = self.name+'/'+str(x.sequence).zfill(3)
         return
-
+    
+    
     def validasi_kredit(self):
         to = fields.Datetime.from_string(self.apply_to)
         sekarang = datetime.datetime.now() + rd(hours=-7)
@@ -392,12 +390,12 @@ class kredit_line(models.Model):
     _name = 'ksp.kredit.line'
     _order = 'kredit_id, sequence'
 
-    name = fields.Char('Name',default='Draft')
+    name = fields.Char('Name',compute='loop_angsuran')
     sequence = fields.Integer('No. Urut',default=0)
     kredit_id = fields.Many2one('ksp.kredit')
     bayar_line = fields.One2many('ksp.kredit.line.bayar','kredit_line_id')
     tgl_jt = fields.Date('Tanggal Jatuh Tempo')
-    tgl_bayar = fields.Date('Tanggal Lunas')
+    tgl_bayar = fields.Date('Tanggal Lunas', default=fields.Date.today())
     angsuran = fields.Integer('Angsuran',default=0)
     pokok = fields.Integer('Pokok',default=0)
     bunga = fields.Integer('Bunga',default=0)
@@ -408,6 +406,13 @@ class kredit_line(models.Model):
     sisa_angsuran = fields.Integer('Sisa Angsuran', compute='_hitung_bayar')
     pembayaran = fields.Integer('Total Pembayaran',compute='_hitung_bayar')
     is_denda = fields.Boolean('Tanpa Denda')
+
+    @api.depends('name')
+    def loop_angsuran(self):
+        default = 0
+        for doc in self:
+            default += 1
+            doc.name = "Angsuran " + str(default)
 
     @api.one
     def _hitung_denda(self):
@@ -455,8 +460,9 @@ class kredit_bayar(models.Model):
 
     name = fields.Char('No. Kwitansi', default='Draft')
     kredit_id = fields.Many2one('ksp.kredit','no. kredit')
+    partner_id = fields.Many2one('res.partner',string='Nasabah', track_visibility='onchange', related='kredit_id.partner_id')
     account_id = fields.Many2one('account.account','Metode Pembayaran')
-    date = fields.Date('Tanggal Bayar')
+    date = fields.Date('Tanggal Bayar', default=fields.Date.today())
     bayar_line = fields.One2many('ksp.kredit.line.bayar', 'bayar_id')
     amount = fields.Integer('Nominal Pembayaran',default=0)
     total_paid = fields.Integer(compute='_hitung_bayar')
@@ -500,7 +506,7 @@ class kredit_line_bayar(models.Model):
     kredit_line_id = fields.Many2one('ksp.kredit.line')
     bayar_id = fields.Many2one('ksp.kredit.bayar')
     angsur_id = fields.Many2one('ksp.kredit.line')
-    tgl_bayar = fields.Date('Tanggal Bayar',related='bayar_id.date', store=True)
+    tgl_bayar = fields.Date('Tanggal Bayar',related='bayar_id.date', store=True, default=fields.Date.today())
     nominal = fields.Integer('Nominal',default=0)
     user_id = fields.Many2one('res.users','operator')
 

@@ -60,7 +60,7 @@
               <sheet>
                     <group>
                         <group attrs="{'readonly':[('status','!=','draft')]}">
-                            <field name="name" string="No. PK" attrs="{'readonly':[('status','!=','draft')]}"/>
+                            <field name="name" string="No. Peminjam" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="kredit_type" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="tanggal" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="tgl_cair" attrs="{'readonly':[('status','!=','draft')]}"/>
@@ -88,6 +88,21 @@
                         </group>
                     </group>
                 <notebook>
+                    <page string="Jadwal Angsuran">
+                        <field name="kredit_line">
+                            <tree String="Jadwal Angsuran" attrs="{'readonly':[('status','!=','draft')]}">
+                                <field name="name" string="No. Angsuran"/>
+                                <field name="sequence"/>
+                                <field name="angsuran"/>
+                                <field name="pokok"/>
+                                <field name="bunga"/>
+                                <field name="denda"/>
+                                <field name="tgl_jt"/>
+                                <field name="tgl_bayar"/>
+                                <field name="lunas"/>
+                            </tree>
+                        </field>
+                    </page>
                     <page string="Jaminan">
                         <field name="jaminan_line">
                             <tree string="Jaminan yang dipergunakan">
@@ -95,21 +110,6 @@
                                 <field name="nilai"/>
                             </tree>
                         </field>
-                    </page>
-                    <page string="Jadwal Angsuran">
-                    <field name="kredit_line">
-                        <tree String="Jadwal Angsuran" attrs="{'readonly':[('status','!=','draft')]}">
-                            <field name="name" string="No. Angsuran"/>
-                            <field name="sequence"/>
-                            <field name="angsuran"/>
-                            <field name="pokok"/>
-                            <field name="bunga"/>
-                            <field name="denda"/>
-                            <field name="tgl_jt"/>
-                            <field name="tgl_bayar"/>
-                            <field name="lunas"/>
-                        </tree>
-                    </field>
                     </page>
                     <page string="Validasi">
                         <group>
@@ -186,7 +186,7 @@
                     <group>
                         <field name="name" readonly="1"/>
                         <field name="tgl_jt" readonly="0"/>
-                        <field name="tgl_bayar" readonly="1"/>
+                        <field name="tgl_bayar"/>
                         <field name="angsuran" readonly="1"/>
                         <field name="pokok" readonly="1"/>
                         <field name="bunga" readonly="1"/>
@@ -355,9 +355,10 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 <group>
-                    <field name="name"/>
-                    <field name="date"/>
+                    <!-- <field name="name"/> -->
                     <field name="kredit_id"/>
+                    <field name="partner_id"/>
+                    <field name="date"/>
                     <field name="account_id"/>
                     <field name="amount"/>
                     <field name="total_paid"/>
@@ -365,7 +366,7 @@
                 <field name="bayar_line">
                     <tree string="angsuran" editable="bottom">
                         <field name="kredit_line_id"
-                               domain = "[('kredit_id','=',parent.kredit_id)]" string="No.Angsuran"/>
+                               domain = "[('kredit_id','=',parent.kredit_id)]" string="No. Angsuran"/>
                         <field name="tgl_bayar" readonly="1"/>
                         <field name="nominal"/>
                     </tree>
@@ -379,11 +380,11 @@
         <field name="model">ksp.kredit.bayar</field>
         <field name="arch" type="xml">
             <tree string="Pembayaran Angsuran">
-                <field name="name"/>
-                <field name="date"/>
+                <!-- <field name="name"/> -->
                 <field name="kredit_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
                 <field name="account_id"/>
-                <field name="amount"/>
             </tree>
         </field>
     </record>
@@ -398,7 +399,7 @@
                     <field name="kredit_id" />
                     <field name="kredit_line_id"
                            domain="[('kredit_id.id','=',3)]"
-                           label="No.Angsuran"/>
+                           label="No. Angsuran"/>
                     <field name="nominal"/>
                     <field name="user_id"/>
                 </group>
