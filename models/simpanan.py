@@ -56,3 +56,30 @@ class simpananDetail(models.Model):
     def _get_total(self):
         for doc in self:
             doc.total = doc.simpanan_wajib + doc.simpanan_sukarela + doc.simpanan_pokok
+
+class SimpananReport(models.Model):
+    _name = "simpanan.report"
+    _auto = False
+
+
+    partner_id = fields.Many2one('res.partner', string='Nasabah')
+    wajib_id = fields.Float(string='Simpanan Wajib')
+    sukarela_id = fields.Float(string='Simpanan Sukarela')
+    pokok_id = fields.Float(string='Simpanan Pokok')
+    amount_total = fields.Float(string='Total')
+    tanggal = fields.Date(string='Tanggal Pembuatan')
+
+    # @api.model_cr
+    # def init(self):
+    #     tools.drop_view_if_exists(self._cr, 'simpanan')
+    #     self._cr.execute("""
+    #         create or replace view simpanan as (
+    #             SELECT
+    #                 min(ol.id) as id,
+    #                 ol.partner_id as partner_id,
+    #                 ol.tanggal as tanggal
+    #             FROM ksp_simpanan ol
+    #             GROUP BY
+    #                 ol.partner_id,
+    #                 ol.tanggal
+    #     )""")
