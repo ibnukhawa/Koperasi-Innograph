@@ -10,10 +10,10 @@ class simpanan(models.Model):
     name = fields.Char(string='No. Transaksi',  copy=False,  index=True, default=lambda self: _('New'))
     partner_id = fields.Many2one('res.partner','Nasabah')
     simpanan_ids = fields.One2many('ksp.simpanan.detail', 'simpanan_id', string='Simpanan')
-    amount_total = fields.Float(compute='_compute_total', string='Total', store=False)
-    wajib_id = fields.Float(compute='_compute_wajib', string='Simpanan Wajib', store=False)
-    sukarela_id = fields.Float(compute='_compute_sukarela', string='Simpanan Sukarela', store=False)
-    pokok_id = fields.Float(compute='_compute_pokok', string='Simpanan Pokok', store=False)
+    amount_total = fields.Float(compute='_compute_total', string='Total', store=True)
+    wajib_id = fields.Float(compute='_compute_wajib', string='Simpanan Wajib', store=True)
+    sukarela_id = fields.Float(compute='_compute_sukarela', string='Simpanan Sukarela', store=True)
+    pokok_id = fields.Float(compute='_compute_pokok', string='Simpanan Pokok', store=True)
     tanggal = fields.Date(string='Tanggal Pembuatan', default=fields.Date.today())
     pekerjaan = fields.Selection([("it","IT"),("dr","Delivery")], string='Pekerjaan')
     
@@ -69,17 +69,25 @@ class SimpananReport(models.Model):
     amount_total = fields.Float(string='Total')
     tanggal = fields.Date(string='Tanggal Pembuatan')
 
-    # @api.model_cr
-    # def init(self):
-    #     tools.drop_view_if_exists(self._cr, 'simpanan')
-    #     self._cr.execute("""
-    #         create or replace view simpanan as (
-    #             SELECT
-    #                 min(ol.id) as id,
-    #                 ol.partner_id as partner_id,
-    #                 ol.tanggal as tanggal
-    #             FROM ksp_simpanan ol
-    #             GROUP BY
-    #                 ol.partner_id,
-    #                 ol.tanggal
-    #     )""")
+    @api.model_cr
+    def init(self):
+        tools.drop_view_if_exists(self._cr, 'simpanan_report')
+        self._cr.execute("""
+            create or replace view simpanan_report as (
+                SELECT
+                    min(ol.id) as id,
+                    ol.partner_id as partner_id,
+                    ol.wajib_id as wajib_id,
+                    ol.sukarela_id as sukarela_id,
+                    ol.pokok_id as pokok_id,
+                    ol.amount_total as amount_total,
+                    ol.tanggal as tanggal
+                FROM ksp_simpanan ol
+                GROUP BY
+                    ol.partner_id,
+                    ol.wajib_id,
+                    ol.sukarela_id,
+                    ol.pokok_id,
+                    ol.amount_total,
+                    ol.tanggal
+        )""")
