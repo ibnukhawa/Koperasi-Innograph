@@ -28,11 +28,13 @@ class kredit(models.Model):
     partner_id = fields.Many2one('res.partner','Nasabah')
     pokok = fields.Integer('Pokok',default=0)
     bunga = fields.Integer('Bunga',default=0,compute='_hitung_bunga')
-    tempo = fields.Integer('Jangka waktu', default=1)
+    tempo = fields.Integer('Jangka waktu', default=1, store=True)
     tempo_type = fields.Selection([('T','Tahun'),('B','Bulan')], default='B')
     angsuran = fields.Integer('Angsuran',compute='_hitung_angsuran')
     rate = fields.Float('Suku Bunga per bulan', default=1.5)
     rate_tempo = fields.Selection([('B','Bulan'),('T','Tahun')])
+    
+    
     rate_type = fields.Selection([
         ('F','Flat'),
         ('M','Flat Menurun'),
@@ -385,7 +387,6 @@ class kredit(models.Model):
             self.status = 'draft'
         return
 
-
 class kredit_line(models.Model):
     _name = 'ksp.kredit.line'
     _order = 'kredit_id, sequence'
@@ -650,4 +651,52 @@ class ksp_jaminan_model(models.Model):
         self.image_medium = data["image_medium"]
         self.image_small = data["image_small"]
         return True
+
+class KreditReport(models.Model):
+    _name = "kredit.report"
+    _auto = False
+
+
+    kredit_type = fields.Many2one('ksp.kredit.type','Jenis Kredit')
+    tanggal = fields.Date(string='Tanggal')
+    tgl_cair = fields.Date(string='Tanggal Cair')
+    account_cair = fields.Many2one('account.account', string='Metode Pencairan')
+    partner_id = fields.Many2one('res.partner',string='Nasabah')
+    pokok = fields.Integer(string='Pokok')
+    bunga = fields.Integer(string='Bunga')
+    tempo = fields.Integer(string='Jangka waktu')
+    angsuran = fields.Integer('Angsuran')
+    rate = fields.Float(string='Suku Bunga per bulan')
+    
+
+    @api.model_cr
+    def init(self):
+        tools.drop_view_if_exists(self._cr, 'kredit_report')
+        self._cr.execute("""
+            create or replace view kredit_report as (
+                SELECT
+                    min(ol.id) as id,
+                    ol.partner_id as partner_id,
+                    ol.kredit_type as kredit_type,
+                    ol.pokok as pokok,
+                    ol.rate_type as rate_type,
+                    ol.tgl_cair as tgl_cair,
+                    ol.tanggal as tanggal,
+                    ol.tempo as tempo,
+                    ol.rate as rate,
+                    ol.angsuran as angsuran,
+                    ol.bunga as bunga
+                FROM ksp_kredit ol
+                GROUP BY
+                    ol.partner_id,
+                    ol.kredit_type,
+                    ol.pokok,
+                    ol.rate_type,
+                    ol.tgl_cair,
+                    ol.tanggal,
+                    ol.tempo,
+                    ol.rate,
+                    ol.angsuran,
+                    ol.bunga
+        )""")
 

@@ -168,6 +168,10 @@
             <tree string="Administrasi Kredit">
                 <field name="name"/>
                 <field name="partner_id" string="Nasabah"/>
+                <field name="tanggal"/>
+                <field name="tgl_cair"/>
+                <field name="tempo"/>
+                <field name="tempo_type"/>
                 <field name="pokok"/>
                 <field name="rate"/>
                 <field name="rate_type"/>
@@ -176,7 +180,35 @@
             </tree>
         </field>
     </record>
-
+    <record model="ir.ui.view" id="ksp_kredit_pivot_view">
+            <field name="name">ksp.kredit.pivot.view</field>
+            <field name="model">ksp.kredit</field>
+            <field name="arch" type="xml">
+                <pivot String="Graph Report Peminjaman">
+                    <field name="partner_id" type="row"/>
+                    <field name="kredit_type" type="row"/>
+                    <field name="tanggal" wtype="row"/>
+                    <field name="tgl_cair" type="measure"/>
+                    <field name="tempo" type="measure"/>
+                    <field name="tempo_type" type="measure"/>
+                    <field name="pokok" type="measure"/>
+                    <field name="rate" type="measure"/>
+                    <field name="rate_type" type="measure"/>
+                    <field name="bunga" type="measure"/>
+                    <field name="angsuran" type="measure"/>
+                </pivot>
+            </field>
+    </record>
+    <record model="ir.ui.view" id="ksp_kredit_graph_view">
+            <field name="name">ksp.kredit.graph.view</field>
+            <field name="model">ksp.kredit</field>
+            <field name="arch" type="xml">
+                <graph String="Graph Report Peminjaman">
+                    <field name="partner_id" type="row"/>
+                    <field name="pokok" type="measure"/>
+                </graph>
+            </field>
+    </record>
     <record id="ksp_kredit_line_form_view" model="ir.ui.view">
         <field name="name">ksp.kredit.line.form.view</field>
         <field name="model">ksp.kredit.line</field>
@@ -230,7 +262,7 @@
         <field name="name">Administrasi Kredit</field>
         <field name="res_model">ksp.kredit</field>
         <field name="view_type">form</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
     </record>
 
     <menuitem name="Koperasi"
@@ -380,7 +412,6 @@
         <field name="model">ksp.kredit.bayar</field>
         <field name="arch" type="xml">
             <tree string="Pembayaran Angsuran">
-                <!-- <field name="name"/> -->
                 <field name="kredit_id"/>
                 <field name="partner_id"/>
                 <field name="date"/>
@@ -722,5 +753,44 @@
               id="ksp_jaminan_model_config_menu"
               parent = "ksp_jaminan_config_menu"
               action="ksp_jaminan_model_action_window"/>
+    
+    <!-- Pivot View Kredit Report -->
+    
+        <record model="ir.ui.view" id="kredit_report_pivot">
+            <field name="name">kredit.report.pivot.view</field>
+            <field name="model">kredit.report</field>
+            <field name="arch" type="xml">
+                <pivot String="Report Peminjaman">
+                    <field name="partner_id" type="row"/>
+                    <field name="kredit_type" type="col"/>
+                    <field name="tanggal" wtype="col"/>
+                    <field name="tgl_cair" type="col"/>
+                    <field name="tempo" type="measure"/>
+                    <field name="pokok" type="measure"/>
+                    <field name="rate" type="measure"/>
+                    <field name="bunga" type="measure"/>
+                    <field name="angsuran" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+    <!-- Graph View Kredit Report -->
+
+        <record model="ir.ui.view" id="kredit_report_graph_view">
+            <field name="name">kredit.report.graph.view</field>
+            <field name="model">kredit.report</field>
+            <field name="arch" type="xml">
+                <graph String="Graph Report Peminjaman">
+                    <field name="partner_id" type="row"/>
+                    <field name="pokok" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="kredit_report_action">
+            <field name="name">Report Peminjam</field>
+            <field name="res_model">kredit.report</field>
+            <field name="view_mode">pivot,graph</field>
+        </record>
   </data>
 </odoo>
