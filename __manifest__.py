@@ -14,8 +14,8 @@ feature :
     - Kredit dengan bunga Flat/Efektif/Anuitas
     """,
 
-    'author': "rads-erp",
-    'website': "http://www.radian-delta.com",
+    'author': "Tim Oddo Innovasi Sarana Grafindo",
+    'website': "http://www.innograph.com/",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml

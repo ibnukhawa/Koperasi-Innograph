@@ -13,7 +13,7 @@ class simpanan(models.Model):
     amount_total = fields.Float(compute='_compute_total', string='Total', store=True)
     wajib_id = fields.Float(compute='_compute_wajib', string='Simpanan Wajib', store=True)
     sukarela_id = fields.Float(compute='_compute_sukarela', string='Simpanan Sukarela', store=True)
-    pokok_id = fields.Float(compute='_compute_pokok', string='Simpanan Pokok', store=True)
+    pokok_id = fields.Float(compute='_compute_pokok', string='Simpanan Pokok', default=25000, store=True)
     tanggal = fields.Date(string='Tanggal Pembuatan', default=fields.Date.today())
     pekerjaan = fields.Selection([("it","IT"),("dr","Delivery")], string='Pekerjaan')
     

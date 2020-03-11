@@ -96,8 +96,8 @@
         </record>
         
         <!-- Graph View -->
-        <record model="ir.ui.view" id="simpanan_report_graph">
-            <field name="name">simpanan.report.graph</field>
+        <record model="ir.ui.view" id="simpanan_report_graph_view">
+            <field name="name">simpanan.report.graph.view</field>
             <field name="model">simpanan.report</field>
             <field name="arch" type="xml">
                 <graph>
@@ -120,7 +120,7 @@
         <menuitem 
             id="menu_ksp_report"
             name="Reporting"
-            sequence="4"
+            sequence="60"
             parent="ksp_menu"
         />
 
@@ -130,5 +130,13 @@
             parent="menu_ksp_report"
             action="simpanan_report_action"
         />
+        
+        <menuitem 
+            id="submenu_kredit_report"
+            name="Report Pinjaman"
+            parent="menu_ksp_report"
+            action="kredit_report_action"
+        />
+
     </data>
 </odoo>
