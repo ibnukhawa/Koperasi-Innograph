@@ -401,7 +401,7 @@ class kredit_line(models.Model):
     pokok = fields.Integer('Pokok',default=0)
     bunga = fields.Integer('Bunga',default=0)
     denda = fields.Integer('Denda',compute='_hitung_denda')
-    lunas = fields.Boolean('Lunas',default=0)
+    lunas = fields.Boolean('Lunas')
     sisa_pokok = fields.Integer('Sisa Pokok', compute='_hitung_bayar')
     sisa_bunga = fields.Integer('Sisa Bunga', compute='_hitung_bayar')
     sisa_angsuran = fields.Integer('Sisa Angsuran', compute='_hitung_bayar')

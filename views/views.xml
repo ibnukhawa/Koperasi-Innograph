@@ -229,7 +229,7 @@
                         <field name="sisa_bunga" readonly="1"/>
                         <field name="sisa_angsuran" readonly="1"/>
                         <field name="pembayaran" readonly="1"/>
-                        <field name="lunas" readonly="1"/>
+                        <field name="lunas"/>
                     </group>
                 </group>
                 <notebook>
