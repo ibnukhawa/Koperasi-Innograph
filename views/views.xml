@@ -97,7 +97,7 @@
                 <notebook>
                     <page string="Jadwal Angsuran">
                         <field name="kredit_line">
-                            <tree String="Jadwal Angsuran" attrs="{'readonly':[('status','!=','draft')]}">
+                            <tree String="Jadwal Angsuran" decoration-success="lunas==True" attrs="{'readonly':[('status','!=','draft')]}">
                                 <field name="name" string="No. Angsuran"/>
                                 <!-- <field name="sequence"/> -->
                                 <field name="angsuran"/>
