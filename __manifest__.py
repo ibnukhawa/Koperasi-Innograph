@@ -31,7 +31,12 @@ feature :
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        'views/simpanan_views.xml'
+        'views/simpanan_views.xml',
+        # 'views/shu.xml',
+        # 'report/pinjaman_koperasi_report.xml',
+        # 'report/pinjaman_report.xml',
+        # 'report/simpanan_koperasi_report.xml',
+        # 'report/simpanan_report.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

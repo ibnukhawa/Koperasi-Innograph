@@ -58,10 +58,17 @@
                   <field name="status" widget="statusbar"/>
               </header>
               <sheet>
+                    <div>
+                        <div class="oe_right oe_button_box" name="button_box">
+							<button name="set_bayar" string="Bayar" type="object" class="oe_stat_button" icon="fa-clone">
+								<!-- <field string="bayar" widget="statinfo"/> -->
+							</button>
+						</div>
+                    </div>
                     <group>
                         <group attrs="{'readonly':[('status','!=','draft')]}">
-                            <field name="name" string="No. Peminjam" attrs="{'readonly':[('status','!=','draft')]}"/>
-                            <field name="kredit_type" attrs="{'readonly':[('status','!=','draft')]}"/>
+                            <field name="name" string="No. Pinjaman" attrs="{'readonly':[('status','!=','draft')]}"/>
+                            <!-- <field name="kredit_type" attrs="{'readonly':[('status','!=','draft')]}"/> -->
                             <field name="tanggal" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="tgl_cair" attrs="{'readonly':[('status','!=','draft')]}"/>
                             <field name="partner_id" string="Nasabah" attrs="{'readonly':[('status','!=','draft')]}"/>
@@ -81,9 +88,9 @@
                                 <field name="total_angsuran" readonly="1"/>
                                 <field name="total_pokok" readonly="1"/>
                                 <field name="total_bunga" readonly="1"/>
-                                <field name="sisa_angsuran" readonly="1"/>
+                                <!-- <field name="sisa_angsuran" readonly="1"/>
                                 <field name="sisa_pokok" readonly="1"/>
-                                <field name="sisa_bunga" readonly="1"/>
+                                <field name="sisa_bunga" readonly="1"/> -->
                             </group>
                         </group>
                     </group>
@@ -92,14 +99,15 @@
                         <field name="kredit_line">
                             <tree String="Jadwal Angsuran" attrs="{'readonly':[('status','!=','draft')]}">
                                 <field name="name" string="No. Angsuran"/>
-                                <field name="sequence"/>
+                                <!-- <field name="sequence"/> -->
                                 <field name="angsuran"/>
                                 <field name="pokok"/>
                                 <field name="bunga"/>
                                 <field name="denda"/>
                                 <field name="tgl_jt"/>
                                 <field name="tgl_bayar"/>
-                                <field name="lunas"/>
+                                <field name="lunas" force_save="1"/>
+                                <!-- <button type="object" name="set_bayar" string="Bayar" /> -->
                             </tree>
                         </field>
                     </page>
@@ -165,18 +173,19 @@
         <field name="name">ksp.kredit.tree.view</field>
         <field name="model">ksp.kredit</field>
         <field name="arch" type="xml">
-            <tree string="Administrasi Kredit">
-                <field name="name"/>
+            <tree decoration-success="status=='lunas'" decoration-danger="status=='macet'" string="Administrasi Kredit">
+                <field name="name" string="No Peminjam"/>
                 <field name="partner_id" string="Nasabah"/>
                 <field name="tanggal"/>
                 <field name="tgl_cair"/>
-                <field name="tempo"/>
-                <field name="tempo_type"/>
-                <field name="pokok"/>
-                <field name="rate"/>
                 <field name="rate_type"/>
-                <field name="bunga"/>
-                <field name="angsuran"/>
+                <!-- <field name="tempo"/>
+                <field name="tempo_type"/> -->
+                <field name="rate"/>
+                <field name="total_pokok"/>
+                <field name="total_bunga"/>
+                <field name="total_angsuran"/>
+                <field name="status"/>
             </tree>
         </field>
     </record>
@@ -188,14 +197,14 @@
                     <field name="partner_id" type="row"/>
                     <field name="kredit_type" type="row"/>
                     <field name="tanggal" wtype="row"/>
-                    <field name="tgl_cair" type="measure"/>
+                    <!-- <field name="tgl_cair" type="measure"/> -->
+                    <!-- <field name="tempo_type" type="measure"/> -->
                     <field name="tempo" type="measure"/>
-                    <field name="tempo_type" type="measure"/>
-                    <field name="pokok" type="measure"/>
                     <field name="rate" type="measure"/>
-                    <field name="rate_type" type="measure"/>
-                    <field name="bunga" type="measure"/>
-                    <field name="angsuran" type="measure"/>
+                    <!-- <field name="rate_type" type="measure"/> -->
+                    <field name="total_pokok" type="measure"/>
+                    <field name="total_bunga" type="measure"/>
+                    <field name="total_angsuran" type="measure"/>
                 </pivot>
             </field>
     </record>
@@ -229,7 +238,8 @@
                         <field name="sisa_bunga" readonly="1"/>
                         <field name="sisa_angsuran" readonly="1"/>
                         <field name="pembayaran" readonly="1"/>
-                        <field name="lunas"/>
+                        <field name="lunas" force_save="1" readonly="1"/>
+                        <button name="set_lunas" string="Cek Status Lunas" class="oe_highlight" type="object"></button>
                     </group>
                 </group>
                 <notebook>
@@ -416,6 +426,7 @@
                 <field name="partner_id"/>
                 <field name="date"/>
                 <field name="account_id"/>
+                <field name="amount"/>
             </tree>
         </field>
     </record>
@@ -770,6 +781,9 @@
                     <field name="rate" type="measure"/>
                     <field name="bunga" type="measure"/>
                     <field name="angsuran" type="measure"/>
+                    <field name="total_pokok" type="measure"/>
+                    <field name="total_bunga" type="measure"/>
+                    <field name="total_angsuran" type="measure"/>
                 </pivot>
             </field>
         </record>

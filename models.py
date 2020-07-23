@@ -21,17 +21,17 @@ class kredit(models.Model):
     _name = 'ksp.kredit'
     
     name = fields.Char('Name', default='Draft')
-    kredit_type = fields.Many2one('ksp.kredit.type','Jenis Kredit', store=True)
-    tanggal = fields.Date('Tanggal' , default=fields.Date.today(), store=True)
-    tgl_cair = fields.Date('Tanggal Cair', default=fields.Date.today(), store=True)
+    kredit_type = fields.Many2one('ksp.kredit.type','Jenis Kredit')
+    tanggal = fields.Date('Tanggal' , default=fields.Date.today())
+    tgl_cair = fields.Date('Tanggal Cair', default=fields.Date.today())
     account_cair = fields.Many2one('account.account','Metode Pencairan')
-    partner_id = fields.Many2one('res.partner','Nasabah', store=True)
-    pokok = fields.Integer('Pokok',default=0, store=True)
-    bunga = fields.Integer('Bunga',default=0,compute='_hitung_bunga', store=True)
+    partner_id = fields.Many2one('res.partner','Nasabah')
+    pokok = fields.Integer('Pokok',default=0)
+    bunga = fields.Integer('Bunga',default=0,compute='_hitung_bunga')
     tempo = fields.Integer('Jangka waktu', default=1, store=True)
     tempo_type = fields.Selection([('T','Tahun'),('B','Bulan')], default='B')
-    angsuran = fields.Integer('Angsuran',compute='_hitung_angsuran', store=True)
-    rate = fields.Float('Suku Bunga per bulan', default=1.5, store=True)
+    angsuran = fields.Integer('Angsuran',compute='_hitung_angsuran')
+    rate = fields.Float('Suku Bunga per bulan', default=1.5)
     rate_tempo = fields.Selection([('B','Bulan'),('T','Tahun')])
     
     
@@ -46,9 +46,9 @@ class kredit(models.Model):
     biaya_line = fields.One2many('ksp.kredit.biaya.line','kredit_id')
     move_line = fields.One2many('account.move','kredit_id')
     jaminan_line = fields.One2many('ksp.kredit.jaminan.line','kredit_id')
-    total_angsuran = fields.Integer('Total Angsuran', compute='_total_angsuran', store=True)
-    total_pokok = fields.Integer('Total Pokok', compute='_total_angsuran', store=True)
-    total_bunga = fields.Integer('Total Bunga', compute='_total_angsuran', store=True)
+    total_angsuran = fields.Integer('Total Angsuran', compute='_total_angsuran')
+    total_pokok = fields.Integer('Total Pokok', compute='_total_angsuran')
+    total_bunga = fields.Integer('Total Bunga', compute='_total_angsuran')
     sisa_angsuran = fields.Integer('Sisa Angsuran')
     sisa_pokok = fields.Integer('Sisa Pokok')
     sisa_bunga = fields.Integer('Sisa Bunga')
@@ -66,29 +66,10 @@ class kredit(models.Model):
         ('macet',"Bermasalah"),
     ], default='draft')
 
-
-    def set_bayar(self):
-        bayar = self.env['ksp.kredit.bayar'].search([('kredit_id','=',self.id)])
-        action = self.env.ref('Koperasi-Innograph.ksp_kredit_bayar_action_window').read()[0]
-        action['context'] = {'default_kredit_id':self.id}
-        if self.status != "cair":
-            raise Warning(_('Belum Bisa membayar angsuran, silahkan selesaikan proses pencairan'))
-        if len(bayar) > 1:
-            raise Warning(_('Data pembayaran angsuran double,pastikan hanya ada 1 data'))
-        elif len(bayar) == 1:
-            action['views'] = [(self.env.ref('Koperasi-Innograph.ksp_kredit_bayar_form_view').id, 'form')]
-            action['res_id'] = bayar.ids[0]  
-        else:
-            action['domain'] = [('id', 'in', bayar.ids)]
-        return action
-
-    @api.depends('kredit_line')
+    @api.one
     def _hitung_bunga(self):
-        self.bunga = sum(line.bunga for line in self.kredit_line) / self.tempo
+        self.bunga = self.pokok*(self.rate/100)*self.tempo
 
-    # @api.one
-    # def _hitung_bunga(self):
-    #     self.bunga = self.pokok*(self.rate/100)*self.tempo
 
     @api.one
     @api.depends('pokok','rate', 'rate_type', 'tempo')
@@ -316,7 +297,7 @@ class kredit(models.Model):
     def validasi_kredit(self):
         to = fields.Datetime.from_string(self.apply_to)
         sekarang = datetime.datetime.now() + rd(hours=-7)
-        if (self.apply_2 == self.apply_key):
+        if (self.apply_2 == self.apply_key) and (to >= sekarang):
             self.status = 'validate'
         else:
             if to < sekarang:
@@ -337,14 +318,58 @@ class kredit(models.Model):
             for item in self.kredit_line:
                 tgl_jt = tgl_cair + rd(months=item.sequence)
                 item.tgl_jt = tgl_jt.strftime(DATE_FORMAT)
+            move=self.env['account.move'].create(
+                {
+                    'date':self.tgl_cair,
+                    'kredit_id':self.id ,
+                    'partner_id':self.partner_id.id,
+                    'journal_id':self.kredit_type.journal_cair.id,
+                    'ref':self.name,
+                }
+            )
+            self.env['account.move.line'].with_context(check_move_validity=False).create(
+                {
+                    'partner_id':self.partner_id.id,
+                    'date':self.tgl_cair,
+                    'journal_id':self.kredit_type.journal_cair.id,
+                    'move_id': move.id,
+                    'account_id': self.account_cair.id,
+                    'credit': pokok-total_biaya,
+                    'debit':0.0,
+                    'name':self.name,
+                }
+            )
+            for biaya in self.biaya_line:
+                self.env['account.move.line'].with_context(check_move_validity=False).create(
+                    {
+                        'partner_id': self.partner_id.id,
+                        'date': self.tgl_cair,
+                        'journal_id': self.kredit_type.journal_cair.id,
+                        'move_id': move.id,
+                        'account_id': biaya.account_id.id,
+                        'credit': biaya.nominal,
+                        'debit': 0.0,
+                        'name': self.name,
+                    }
+                )
+
+            self.env['account.move.line'].create(
+                {
+                    'partner_id': self.partner_id.id,
+                    'date': self.tgl_cair,
+                    'journal_id': self.kredit_type.journal_cair.id,
+                    'move_id': move.id,
+                    'account_id': self.kredit_type.account_pokok.id,
+                    'credit': 0.0,
+                    'debit': pokok,
+                    'name': self.name,
+                }
+            )
+            move.post()
         return
 
     def pelunasan_kredit(self):
-        for data in self.kredit_line:
-            if data.lunas == 1:
-                self.status = 'lunas'
-            else:
-                raise Warning(_('Angsuran belum lunas.'))
+        self.status = 'lunas'
         return
 
     def kredit_macet(self):
@@ -383,38 +408,12 @@ class kredit_line(models.Model):
     pembayaran = fields.Integer('Total Pembayaran',compute='_hitung_bayar')
     is_denda = fields.Boolean('Tanpa Denda')
 
-    def set_bayar(self):
-        bayar = self.env['ksp.kredit.bayar'].search([('kredit_id','=',self.id)])
-        action = self.env.ref('Koperasi-Innograph.ksp_kredit_bayar_action_window').read()[0]
-        action['context'] = {'default_kredit_id':self.id}
-        if len(bayar) > 1:
-            raise Warning(_('Data pembayaran angsuran double,pastikan hanya ada 1 data'))
-        elif len(bayar) == 1:
-            action['views'] = [(self.env.ref('Koperasi-Innograph.ksp_kredit_bayar_form_view').id, 'form')]
-            action['res_id'] = bayar.ids[0]  
-        else:
-            action['domain'] = [('id', 'in', bayar.ids)]
-        return action
-        # return {
-		# 	'type': 'ir.actions.act_window',
-		# 	'name': 'Popup',
-		# 	'res_model': 'ksp.kredit.bayar',
-		# 	'view_type': 'form',
-		# 	'view_mode': 'form',
-		# 	'target': 'new',
-		# }
-
-    @api.depends()
+    @api.depends('name')
     def loop_angsuran(self):
+        default = 0
         for doc in self:
-            doc.name = "Angsuran " + str(doc.sequence)
-
-    # @api.one
-    # def _status_lunas(self):
-    #     lunas = self.lunas
-    #     nominal1 = 
-    #     nominal2 = self.env['ksp.kredit.line.bayar'].search([('nominal','=',self.id)])
-    #         if self.env[]
+            default += 1
+            doc.name = "Angsuran " + str(default)
 
     @api.one
     def _hitung_denda(self):
@@ -429,15 +428,6 @@ class kredit_line(models.Model):
         else:
             self.denda = 0
 
-    @api.multi
-    def set_lunas(self):
-        if self.sisa_angsuran == 0:
-            self.lunas = True
-        else:
-            self.lunas = False
-        return
-
-    @api.depends('lunas','sisa_pokok','sisa_angsuran','pembayaran','bayar_line')
     def _hitung_bayar(self):
         self.pembayaran = sum(bayar.nominal for bayar in self.bayar_line )
         self.sisa_angsuran = self.angsuran - self.pembayaran
@@ -468,10 +458,9 @@ class kredit_jaminan_line(models.Model):
 
 class kredit_bayar(models.Model):
     _name = 'ksp.kredit.bayar'
-    _rec_name = 'kredit_id'
 
     name = fields.Char('No. Kwitansi', default='Draft')
-    kredit_id = fields.Many2one('ksp.kredit','No. Pinjaman')
+    kredit_id = fields.Many2one('ksp.kredit','no. kredit')
     partner_id = fields.Many2one('res.partner',string='Nasabah', track_visibility='onchange', related='kredit_id.partner_id')
     account_id = fields.Many2one('account.account','Metode Pembayaran')
     date = fields.Date('Tanggal Bayar', default=fields.Date.today())
@@ -677,10 +666,7 @@ class KreditReport(models.Model):
     bunga = fields.Integer(string='Bunga', store=True)
     tempo = fields.Integer(string='Jangka waktu', store=True)
     angsuran = fields.Integer('Angsuran', store=True)
-    rate = fields.Float(string='Suku Bunga per bulan', store=True)
-    total_angsuran = fields.Integer('Total Angsuran', compute='_total_angsuran', store=True)
-    total_pokok = fields.Integer('Total Pokok', compute='_total_angsuran', store=True)
-    total_bunga = fields.Integer('Total Bunga', compute='_total_angsuran', store=True)
+    rate = fields.Float(string='Suku Bunga per bulan' store=True)
     
 
     @api.model_cr
@@ -699,10 +685,7 @@ class KreditReport(models.Model):
                     ol.tempo as tempo,
                     ol.rate as rate,
                     ol.angsuran as angsuran,
-                    ol.bunga as bunga,
-                    ol.total_angsuran as total_angsuran,
-                    ol.total_pokok as total_pokok,
-                    ol.total_bunga as total_bunga
+                    ol.bunga as bunga
                 FROM ksp_kredit ol
                 GROUP BY
                     ol.partner_id,
@@ -714,9 +697,6 @@ class KreditReport(models.Model):
                     ol.tempo,
                     ol.rate,
                     ol.angsuran,
-                    ol.bunga,
-                    ol.total_angsuran,
-                    ol.total_pokok,
-                    ol.total_bunga
+                    ol.bunga
         )""")
 
