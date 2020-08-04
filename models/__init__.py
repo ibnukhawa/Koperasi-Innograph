@@ -2,4 +2,5 @@
 
 from . import models
 from . import simpanan
+from . import kas_report
 # from . import shu

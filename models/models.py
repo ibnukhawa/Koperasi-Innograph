@@ -17,7 +17,7 @@ def rounding(arg1, arg2, arg3):
     return result
 
 
-class kredit(models.Model):
+class KspKredit(models.Model):
     _name = 'ksp.kredit'
     
     name = fields.Char('Name', default='Draft')
@@ -40,8 +40,7 @@ class kredit(models.Model):
         ('M','Flat Menurun'),
         ('A','Anuitet'),
         ('E','Efektif'),
-        ('K','Kontrak')
-    ], default='F')
+        ('K','Kontrak')], default='F')
     kredit_line = fields.One2many('ksp.kredit.line','kredit_id')
     biaya_line = fields.One2many('ksp.kredit.biaya.line','kredit_id')
     move_line = fields.One2many('account.move','kredit_id')
@@ -719,4 +718,3 @@ class KreditReport(models.Model):
                     ol.total_pokok,
                     ol.total_bunga
         )""")
-

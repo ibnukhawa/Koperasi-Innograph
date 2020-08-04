@@ -1,63 +1,63 @@
 <odoo>
-  <data>
+    <data>
     <record id='ksp_kredit_form_view' model='ir.ui.view'>
         <field name="name">ksp.kredit.form.view</field>
         <field name="model">ksp.kredit</field>
         <field name="arch" type="xml">
             <form string="Administrasi Kredit">
-              <header>
-                  <button
-                          string="generate angsuran"
-                          type="object"
-                          name="generate_angsuran"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','draft')]}"
-                  />
-                  <button
-                          string="confirm"
-                          type="object"
-                          name="confirm_kredit"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','draft')]}"
-                  />
-                  <button
-                          string="validasi"
-                          type="object"
-                          name="validasi_kredit"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','confirm')]}"
-                  />
-                  <button
-                          string="pencairan"
-                          type="object"
-                          name="pencairan_kredit"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','validate')]}"
-                  />
-                  <button
-                          string="pelunasan"
-                          type="object"
-                          name="pelunasan_kredit"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','cair')]}"
-                  />
-                  <button
-                          string="bermasalah"
-                          type="object"
-                          name="kredit_macet"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','!=','cair')]}"
-                  />
-                  <button
-                          string="cancel"
-                          type="object"
-                          name="button_cancel"
-                          class="oe_highlight"
-                          attrs="{'invisible':[('status','=','draft')]}"
-                  />
-                  <field name="status" widget="statusbar"/>
-              </header>
-              <sheet>
+                <header>
+                    <button
+                            string="generate angsuran"
+                            type="object"
+                            name="generate_angsuran"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','draft')]}"
+                    />
+                    <button
+                            string="confirm"
+                            type="object"
+                            name="confirm_kredit"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','draft')]}"
+                    />
+                    <button
+                            string="validasi"
+                            type="object"
+                            name="validasi_kredit"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','confirm')]}"
+                    />
+                    <button
+                            string="pencairan"
+                            type="object"
+                            name="pencairan_kredit"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','validate')]}"
+                    />
+                    <button
+                            string="pelunasan"
+                            type="object"
+                            name="pelunasan_kredit"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','cair')]}"
+                    />
+                    <button
+                            string="bermasalah"
+                            type="object"
+                            name="kredit_macet"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','!=','cair')]}"
+                    />
+                    <button
+                            string="cancel"
+                            type="object"
+                            name="button_cancel"
+                            class="oe_highlight"
+                            attrs="{'invisible':[('status','=','draft')]}"
+                    />
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
                     <div>
                         <div class="oe_right oe_button_box" name="button_box">
 							<button name="set_bayar" string="Bayar" type="object" class="oe_stat_button" icon="fa-clone">
@@ -164,7 +164,7 @@
                         </field>
                     </page>
                 </notebook>
-              </sheet>
+                </sheet>
             </form>
         </field>
     </record>
@@ -184,7 +184,7 @@
                 <field name="rate"/>
                 <field name="total_pokok"/>
                 <field name="total_bunga"/>
-                <field name="total_angsuran"/>
+                <field name="total_angsuran" sum='Total Angsuran'/>
                 <field name="status"/>
             </tree>
         </field>
@@ -806,5 +806,45 @@
             <field name="res_model">kredit.report</field>
             <field name="view_mode">pivot,graph</field>
         </record>
-  </data>
+
+        <!-- Kas -->
+
+        <record model="ir.ui.view" id="kas_report_tree_view">
+            <field name="name">kas.report.tree.view</field>
+            <field name="model">kas.report</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="total_pinjaman"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="kas_report_form_view">
+            <field name="name">kas.report.form.view</field>
+            <field name="model">kas.report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <field name="name"/>
+                    <field name="total_pinjaman"/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="kas_report_action">
+            <field name="name">Report Kas</field>
+            <field name="res_model">kas.report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem 
+            id="submenu_kas_report"
+            name="Report Kas"
+            parent="menu_ksp_report"
+            action="kas_report_action"
+        />
+        
+        <!-- End of Kas -->
+
+    </data>
 </odoo>
